@@ -1,33 +1,33 @@
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
+using TMPro;
 
 public class GameManager : MonoBehaviour {
 
     private const string API_URI = "https://servizos.meteogalicia.gal/mgrss/observacion/jsonCamaras.action";
 
     [SerializeField] private RawImage image;
+    [SerializeField] private TMP_Text loadingText;
     private CameraList cameraList;
-    private bool isLoading;
     private int index;
     
     void Start() {
-        isLoading = false;
         loadNewImage();
     }
 
     void Update() {
-        if (Input.GetKeyDown(KeyCode.Space) && !isLoading) {
+        if (Input.GetKeyDown(KeyCode.Space) && !loadingText.IsActive()) {
             loadNewImage();
         }
 
-        if (Input.GetKeyDown(KeyCode.R) && !isLoading) {
+        if (Input.GetKeyDown(KeyCode.R) && !loadingText.IsActive()) {
             loadImageTexture();
         }
     }
 
     private void loadNewImage() {
-        isLoading = true;
+        loadingText.gameObject.SetActive(true);
         StartCoroutine(RequestHandler.GetRequest(API_URI, false, handler => {
             cameraList = JsonUtility.FromJson<CameraList>(handler.text);
             index = Random.Range(0, cameraList.listaCamaras.Count);
@@ -36,10 +36,10 @@ public class GameManager : MonoBehaviour {
     }
 
     private void loadImageTexture() {
-        isLoading = true;
+        loadingText.gameObject.SetActive(true);
         StartCoroutine(RequestHandler.GetRequest(cameraList.listaCamaras[index].imaxeCamara, true, handler => {
             image.texture = ((DownloadHandlerTexture)handler).texture;
-            isLoading = false;
+            loadingText.gameObject.SetActive(false);
         }));
     }
 }
